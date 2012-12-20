@@ -24,7 +24,7 @@ mk_uri: http://<%= @address %>:8026
 node_expire_timeout: 300
 noun: config
 persist_host: <%= @persist_host %>
-persist_mode: :mongo
+persist_mode: :<%= @persist_mode %>
 persist_port: 27017
 persist_timeout: 10
 register_timeout: 120

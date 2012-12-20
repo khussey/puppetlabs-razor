@@ -6,7 +6,8 @@
 #   [*directory*]: installation directory, default /opt/razor.
 #   [*address*]: razor.ipxe chain address, and razor service listen address,
 #                default: facter ipaddress.
-#   [*persist_host*]: ip address of the mongodb server.
+#   [*persist_host*]: ip address of the database server.
+#   [*persist_mode*]: mode of persistent storage.
 #   [*mk_checkin_interval*]: mk checkin interval.
 #   [*mk_name*]: Razor tinycore linux mk name.
 #   [*mk_source*]: Razor tinycore linux mk iso file source (local or http).
@@ -25,6 +26,7 @@
 #   * [stdlib module](https://github.com/puppetlabs/puppetlabs-stdlib)
 #   * [tftp module](https://github.com/puppetlabs/puppetlabs-tftp)
 #   * [sudo module](https://github.com/saz/puppet-sudo)
+#   * [PostgreSQL module](https://github.com/puppetlabs/puppet-postgresql)
 #
 # Usage:
 #
@@ -37,6 +39,7 @@ class razor (
   $directory           = '/opt/razor',
   $address             = $::ipaddress,
   $persist_host        = '127.0.0.1',
+  $persist_mode        = 'mongo',
   $mk_checkin_interval = '60',
   $mk_name             = 'rz_mk_prod-image.0.9.1.6.iso',
   $mk_source           = 'https://github.com/downloads/puppetlabs/Razor-Microkernel/rz_mk_prod-image.0.9.1.6.iso',
@@ -48,8 +51,14 @@ class razor (
   include 'razor::ruby'
   include 'razor::tftp'
 
-  class { 'mongodb':
-    enable_10gen => true,
+  if($persist_mode = 'mongo') {
+    class { 'mongodb':
+      enable_10gen => true,
+    }
+  }
+
+  if($persist_mode = 'postgres') {
+    include postgresql::server
   }
 
   Class['razor::ruby'] -> Class['razor']
@@ -105,7 +114,6 @@ class razor (
     start     => "${directory}/bin/razor_daemon.rb start",
     stop      => "${directory}/bin/razor_daemon.rb stop",
     require   => [
-      Class['mongodb'],
       File[$directory],
       Sudo::Conf['razor']
     ],
@@ -113,6 +121,14 @@ class razor (
       Class['razor::nodejs'],
       Vcsrepo[$directory]
     ],
+  }
+
+  if($persist_mode = 'mongo') {
+    Service['razor'] -> Class['mongodb']
+  }
+
+  if($persist_mode = 'postgres') {
+    Service['razor'] -> Class['postgres::server']
   }
 
   file { '/usr/bin/razor':

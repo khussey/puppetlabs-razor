@@ -21,6 +21,7 @@ Puppet module dependencies for razor module:
 * [tftp module](https://github.com/puppetlabs/puppetlabs-tftp)
 * [vcsrepo module](https://github.com/puppetlabs/puppetlabs-vcsrepo)
 * [sudo module](https://github.com/saz/puppet-sudo)
+* [PostgreSQL module](https://github.com/puppetlabs/puppet-postgresql)
 
 ## Installation
 
@@ -38,7 +39,8 @@ Install puppetlabs-razor module and dependencies into module_path:
       ├── puppetlabs-stdlib (v2.3.2)
       ├── puppetlabs-tftp (v0.1.1)
       ├── puppetlabs-vcsrepo (v0.0.4)
-      └── saz-sudo (v2.0.0)
+      ├── saz-sudo (v2.0.0)
+      └── puppetlabs-postgresql (v1.0.0)
 
 Puppet apply, apply test manifests:
 
@@ -58,7 +60,8 @@ Puppet master, add razor class to target node:
 * username: razor daemon username, default: razor.
 * directory; installation target directory, default: /opt/razor.
 * address: razor.ipxe chain address, and razor service listen address, default: facter ipaddress.
-* persist_host: ip address of the mongodb server, default: 127.0.0.1.
+* persist_host: ip address of the database server, default: 127.0.0.1.
+* persist_mode: mode of persistent storage (one of mongo, postgres, or memory), default: mongo.
 * mk_checkin_interval: mk checkin interval, default: 60 seconds.
 * mk_name: razor tiny core linux mk name.
 * mk_source: razor mk iso source, default: [Razor-Microkernel project](https://github.com/downloads/puppetlabs/Razor-Microkernel) production iso.
