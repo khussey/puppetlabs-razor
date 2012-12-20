@@ -51,14 +51,20 @@ class razor (
   include 'razor::ruby'
   include 'razor::tftp'
 
-  if($persist_mode = 'mongo') {
-    class { 'mongodb':
-      enable_10gen => true,
+  case $persist_mode {
+    'mongo': {
+      class { 'mongodb':
+        enable_10gen => true,
+      }
     }
-  }
-
-  if($persist_mode = 'postgres') {
-    include postgresql::server
+    'postgres': {
+      include postgresql::server
+    }
+    'memory': {
+    }
+    default: {
+      fail("Unsupported persist_mode: ${persist_mode}")
+    }
   }
 
   Class['razor::ruby'] -> Class['razor']
@@ -123,12 +129,18 @@ class razor (
     ],
   }
 
-  if($persist_mode = 'mongo') {
-    Service['razor'] -> Class['mongodb']
-  }
-
-  if($persist_mode = 'postgres') {
-    Service['razor'] -> Class['postgres::server']
+  case $persist_mode {
+    'mongo': {
+      Service['razor'] -> Class['mongodb']
+    }
+    'postgres': {
+      Service['razor'] -> Class['postgres::server']
+    }
+    'memory': {
+    }
+    default: {
+      fail("Unsupported persist_mode: ${persist_mode}")
+    }
   }
 
   file { '/usr/bin/razor':
